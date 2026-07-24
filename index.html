@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M.A.U (合気) — Way of the Harmonizing Blade</title>
+<link rel="icon" type="image/png" href="web_icon.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap');
+:root{
+  --black:#0A0A0C;--black-soft:#16161B;--black-elevated:#1F1F26;
+  --washi:#F4F2EC;--washi-dim:#D9D6CC;
+  --indigo-deep:#101B3D;--indigo:#1E2E6B;--indigo-mid:#2E3F91;
+  --indigo-light:#5468C4;--indigo-glow:#7C8CE8;
+  --danger:#A62639;--gold:#C9A34E;
+  --text-primary:#FFFFFF;--text-secondary:#B7BAC9;
+}
+html,body{height:100%;overflow:hidden;font-family:'Noto Serif',serif;background:var(--black);color:var(--text-primary)}
+canvas{display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:0}
+
+/* ── Menu ── */
+#menu{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .4s;padding:20px}
+#menu.hidden{opacity:0;pointer-events:none}
+.seal{width:150px;height:150px;border:3px solid var(--indigo);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:sealSpin 30s linear infinite;position:relative}
+.seal::after{content:'';position:absolute;width:120px;height:120px;border:2px solid var(--indigo-mid);border-radius:50%;animation:sealSpin 20s linear infinite reverse}
+.seal span{font-size:36px;color:var(--indigo-glow)}
+@keyframes sealSpin{to{transform:rotate(360deg)}}
+.title{font-size:clamp(28px,5vw,42px);letter-spacing:.14em;color:var(--washi);text-shadow:0 0 18px var(--indigo-glow);margin-bottom:4px}
+.subtitle{font-size:clamp(12px,2vw,16px);letter-spacing:.18em;color:var(--indigo-glow);text-transform:uppercase;margin-bottom:16px}
+.level-pill{background:var(--black-elevated);border:1px solid var(--indigo-light);border-radius:20px;padding:6px 18px;font-size:13px;color:var(--washi);margin-bottom:20px}
+.menu-btns{display:flex;flex-direction:column;gap:8px;width:min(320px,85vw);background:var(--black-elevated);border:1px solid var(--indigo-light);border-radius:8px;padding:14px;box-shadow:0 0 20px rgba(30,46,107,.25)}
+.menu-btns button{
+  width:100%;padding:10px 16px;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.12em;
+  border:none;cursor:pointer;transition:transform .12s,box-shadow .12s;position:relative;overflow:hidden;
+  color:var(--washi);border-radius:2px 14px 2px 14px;
+}
+.menu-btns button:active{transform:scale(.94)}
+.btn-primary{background:linear-gradient(135deg,var(--indigo-mid),var(--indigo-deep));border:2px solid var(--gold)!important;box-shadow:0 0 12px rgba(201,163,78,.25)}
+.btn-outline{background:rgba(16,27,61,.7);border:1px solid var(--indigo-light)!important}
+.btn-outline:hover{background:rgba(30,46,107,.7)}
+
+/* ── Modals ── */
+.modal-overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(10,10,12,.85);opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.active{opacity:1;pointer-events:all}
+.modal{background:var(--black-soft);border:1px solid var(--indigo);border-radius:4px 20px 4px 20px;padding:28px;max-width:min(680px,92vw);max-height:85vh;overflow-y:auto;width:100%;transform:scale(.7);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.modal-overlay.active .modal{transform:scale(1)}
+.modal h2{text-align:center;font-size:20px;letter-spacing:.15em;color:var(--washi);margin-bottom:18px;text-shadow:0 0 10px var(--indigo-glow)}
+.modal-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer}
+
+/* ── About ── */
+.lore-block{background:var(--black);border:1px solid var(--indigo);border-radius:8px;padding:16px;margin-bottom:12px}
+.lore-block h3{font-size:14px;color:var(--gold);letter-spacing:.1em;margin-bottom:8px}
+.lore-block p{font-size:13px;color:var(--text-secondary);line-height:1.7}
+.about-content{font-size:13px;color:var(--text-secondary);line-height:1.8}
+.about-content p{margin-bottom:10px}
+
+/* ── How to Play ── */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.gallery-item{background:var(--black);border:2px solid var(--indigo);border-radius:12px;overflow:hidden;transition:border-color .2s,transform .15s}
+.gallery-item:hover{transform:scale(1.03);border-color:var(--indigo-light)}
+.screenshot{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-bottom:1px solid var(--indigo)}
+.screenshot .shot-label{position:absolute;bottom:8px;left:8px;background:rgba(10,10,12,.75);padding:3px 10px;border-radius:4px;font-size:10px;letter-spacing:.1em;color:var(--indigo-glow)}
+.gallery-item .caption{padding:10px;font-size:12px;color:var(--text-secondary);text-align:center;line-height:1.5}
+
+/* ── Map Grid ── */
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.map-card{background:var(--black);border:2px solid transparent;border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .15s}
+.map-card:hover{transform:scale(1.04);border-color:var(--indigo-light)}
+.map-card.selected{border-color:var(--indigo-light);box-shadow:0 0 16px rgba(84,104,196,.3)}
+.map-card img{width:100%;height:100px;object-fit:cover;display:block}
+.map-card .info{padding:10px}
+.map-card .info h3{font-size:13px;color:var(--washi);margin-bottom:2px}
+.map-card .info p{font-size:11px;color:var(--text-secondary)}
+
+/* ── Avatar Grid ── */
+.avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+.avatar-card{background:var(--black);border:2px solid var(--indigo);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:border-color .2s,transform .15s}
+.avatar-card:hover{transform:scale(1.04)}
+.avatar-card.selected{border-color:var(--gold);box-shadow:0 0 16px rgba(201,163,78,.3)}
+.avatar-card img{width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto 8px;border:2px solid var(--indigo-mid)}
+.avatar-card h3{font-size:13px;color:var(--washi)}
+.avatar-card p{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.avatar-card .status{font-size:11px;color:var(--gold);margin-top:6px}
+
+/* ── Game HUD ── */
+#hud{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:flex-start;justify-content:space-between;padding:10px 14px;pointer-events:none;gap:10px;flex-wrap:wrap}
+#hud.hidden,#controls.hidden{display:none}
+
+.player-card{display:flex;align-items:center;gap:10px;background:rgba(31,31,38,.92);border:1px solid var(--indigo-light);border-radius:2px 20px 2px 20px;padding:10px 14px;pointer-events:auto;backdrop-filter:blur(8px);box-shadow:0 4px 24px rgba(0,0,0,.35)}
+.player-avatar{width:44px;height:44px;border-radius:50%;border:2px solid var(--indigo-mid);object-fit:cover;box-shadow:0 0 10px rgba(30,46,107,.4)}
+.player-meta{display:flex;flex-direction:column;min-width:0}
+.player-name{font-size:14px;font-weight:700;color:var(--washi);letter-spacing:.06em;white-space:nowrap;text-shadow:0 0 8px rgba(244,242,236,.15)}
+.player-title{font-size:11px;color:var(--indigo-glow);letter-spacing:.08em;white-space:nowrap}
+.stat-grid{display:flex;gap:6px;flex-wrap:wrap}
+.stat-item{display:flex;flex-direction:column;align-items:center;min-width:40px;background:rgba(0,0,0,.25);border:1px solid rgba(84,104,196,.2);border-radius:4px;padding:2px 6px}
+.stat-label{font-size:9px;color:var(--text-secondary);letter-spacing:.1em;text-transform:uppercase}
+.stat-val{font-size:12px;font-weight:700;color:var(--washi)}
+
+.hp-section{display:flex;flex-direction:column;gap:2px;min-width:160px}
+.hp-bar-large{position:relative;width:100%;height:22px;background:rgba(0,0,0,.6);border:1px solid var(--danger);border-radius:4px;overflow:hidden;box-shadow:0 0 14px rgba(166,38,57,.3),inset 0 1px 0 rgba(255,255,255,.06)}
+.hp-fill-large{height:100%;background:linear-gradient(90deg,var(--danger),#D9455A);transition:width .15s;border-radius:3px;position:relative}
+.hp-fill-large::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 17px,rgba(0,0,0,.18) 17px,rgba(0,0,0,.18) 20px);pointer-events:none}
+.hp-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);letter-spacing:.06em;pointer-events:none}
+
+.wave-status{display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:auto;margin-top:2px}
+.wave-tracker{display:flex;gap:5px;align-items:center}
+.wave-dot{width:10px;height:10px;border-radius:50%;background:var(--black-elevated);border:1px solid var(--indigo-light);transition:all .3s}
+.wave-dot.active{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(201,163,78,.5)}
+.wave-dot.current{background:var(--indigo-glow);border-color:var(--indigo-glow);box-shadow:0 0 10px rgba(124,140,232,.6);transform:scale(1.25)}
+.wave-dot.dead{opacity:.25;border-color:rgba(84,104,196,.2)}
+.wave-label{font-size:12px;color:var(--text-secondary);letter-spacing:.1em}
+
+.hud-resources{display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.enemy-pill{background:rgba(31,31,38,.7);border:1px solid var(--indigo);border-radius:2px 12px 2px 12px;padding:5px 12px;font-size:11px;color:var(--text-secondary);text-align:right}
+
+/* ── Controls hint ── */
+#controls{position:absolute;bottom:10px;left:0;right:0;z-index:20;display:flex;justify-content:center;gap:16px;pointer-events:none}
+#controls.hidden{display:none}
+.ctrl-pill{background:rgba(31,31,38,.7);border:1px solid var(--indigo);border-radius:2px 12px 2px 12px;padding:5px 12px;font-size:11px;color:var(--text-secondary)}
+
+/* ── Game Over ── */
+#gameover{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(10,10,12,.9);opacity:0;pointer-events:none;transition:opacity .4s}
+#gameover.active{opacity:1;pointer-events:all}
+#gameover .panel{background:var(--black-soft);border:1px solid var(--danger);border-radius:4px 20px 4px 20px;padding:32px;text-align:center;max-width:360px;width:90%;transform:scale(.7);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+#gameover.active .panel{transform:scale(1)}
+#gameover h2{font-size:28px;color:var(--danger);letter-spacing:.15em;margin-bottom:16px}
+#gameover .stat{font-size:14px;color:var(--washi);margin:6px 0}
+#gameover .stat span{color:var(--gold)}
+#gameover .btns{display:flex;gap:10px;margin-top:20px;justify-content:center}
+#gameover .btns button{padding:10px 24px;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.08em;border:none;border-radius:2px 14px 2px 14px;cursor:pointer;color:var(--washi);transition:transform .12s}
+#gameover .btns button:active{transform:scale(.94)}
+#gameover .retry{background:linear-gradient(135deg,var(--indigo-mid),var(--indigo-deep));border:2px solid var(--gold)!important}
+#gameover .back{background:var(--black);border:1px solid var(--indigo-light)!important}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--indigo);border-radius:3px}
+
+@media (max-height:640px){
+  .seal{width:120px;height:120px}
+  .seal::after{width:96px;height:96px}
+  .seal span{font-size:28px}
+  .menu-btns{padding:10px;gap:6px}
+  .menu-btns button{padding:8px 12px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Ember Background Canvas ═══ -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- ═══ Main Menu ═══ -->
+<div id="menu">
+  <div class="seal"><span>合気</span></div>
+  <div class="title">M.A.U</div>
+  <div class="subtitle">Way of the Harmonizing Blade</div>
+  <div class="level-pill" id="menuLevel">Lv. 1</div>
+  <div class="menu-btns">
+    <button class="btn-primary" onclick="openModal('mapModal')">出陣 — Enter Battle</button>
+    <button class="btn-outline" onclick="openModal('avatarModal')">選択 — Choose Avatar</button>
+    <button class="btn-outline" onclick="openModal('aboutModal')">物語 — About the Game</button>
+    <button class="btn-outline" onclick="openModal('howToPlayModal')">指南 — How to Play</button>
+  </div>
+</div>
+
+<!-- ═══ Map Selection Modal ═══ -->
+<div class="modal-overlay" id="mapModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('mapModal')">&times;</button>
+    <h2>SELECT ARENA</h2>
+    <div class="map-grid" id="mapGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ Avatar Selection Modal ═══ -->
+<div class="modal-overlay" id="avatarModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('avatarModal')">&times;</button>
+    <h2>選択 — Choose Your Form</h2>
+    <div class="avatar-grid" id="avatarGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ About Modal ═══ -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('aboutModal')">&times;</button>
+    <h2>物語 — The Tale of M.A.U</h2>
+    <div class="about-content">
+      <div class="lore-block">
+        <h3>ORIGIN</h3>
+        <p>In the age of warring clans, a lone warrior walks the path of the Harmonizing Blade. Known only as M.A.U, this mysterious fighter carries no banner and fears no army.</p>
+      </div>
+      <div class="lore-block">
+        <h3>PURPOSE</h3>
+        <p>Master ancient techniques, face relentless waves of shadow, and etch your name into legend. Every battle refines your spirit. Every wave tests your resolve.</p>
+      </div>
+      <div class="lore-block">
+        <h3>THE HARMONIZING BLADE</h3>
+        <p>Blade and spirit become one. The weapon responds to the wielder's heart—smooth as water, sharp as steel. Those who achieve true harmony can fell foes without breaking stride.</p>
+      </div>
+      <div class="lore-block">
+        <h3>WORLDS</h3>
+        <p>From the blood-red depths of Crimson Hollow to the eternal lightning of Storm Ridge, ten unique arenas await. Each realm holds its own dangers and beauties.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ How to Play Modal ═══ -->
+<div class="modal-overlay" id="howToPlayModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('howToPlayModal')">&times;</button>
+    <h2>指南 — The Way of Battle</h2>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <div class="screenshot" style="background:linear-gradient(135deg,#16161B,#1F1F26);display:flex;align-items:center;justify-content:center">
+          <div style="width:60px;height:60px;border:2px solid #5468C4;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#5468C4;font-size:20px;font-weight:700">合</div>
+        </div>
+        <div class="caption">Main Menu & Seal</div>
+      </div>
+      <div class="gallery-item">
+        <div class="screenshot" style="background:linear-gradient(135deg,#16161B,#0A0A0C);display:flex;align-items:center;justify-content:center;gap:8px">
+          <div style="width:36px;height:36px;border:2px solid #1E2E6B;border-radius:50%"></div>
+          <div style="width:36px;height:36px;border:2px solid #5468C4;border-radius:50%"></div>
+          <div style="width:36px;height:36px;border:2px solid #C9A34E;border-radius:50%"></div>
+        </div>
+        <div class="caption">Avatar Selection</div>
+      </div>
+      <div class="gallery-item">
+        <div class="screenshot" style="background:#0A0A0C;display:flex;align-items:center;justify-content:center;position:relative">
+          <div style="width:16px;height:16px;background:#F4F2EC;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 12px #7C8CE8"></div>
+          <div style="width:10px;height:10px;background:#5468C4;border-radius:50%;position:absolute;top:35%;left:30%"></div>
+          <div style="width:10px;height:10px;background:#C9A34E;border-radius:50%;position:absolute;top:60%;left:70%"></div>
+          <div style="width:10px;height:10px;background:#A62639;border-radius:50%;position:absolute;top:45%;left:75%"></div>
+        </div>
+        <div class="caption">Battle Arena — Movement</div>
+      </div>
+      <div class="gallery-item">
+        <div class="screenshot" style="background:linear-gradient(135deg,#1A1A2E,#0A0A1A);display:flex;align-items:center;justify-content:center;position:relative">
+          <div style="width:14px;height:14px;border:2px solid #C9A34E;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(45deg)"></div>
+          <div style="width:8px;height:8px;background:#E0455A;border-radius:50%;position:absolute;top:30%;left:40%"></div>
+          <div style="width:8px;height:8px;background:#E0455A;border-radius:50%;position:absolute;top:55%;left:65%"></div>
+          <div style="font-size:9px;color:#7C8CE8;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);letter-spacing:.1em">WAVE 3</div>
+        </div>
+        <div class="caption">Combat & Wave Progression</div>
+      </div>
+    </div>
+    <div style="margin-top:18px;background:var(--black);border:1px solid var(--indigo);border-radius:8px;padding:14px">
+      <div style="font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:8px">KEY PRINCIPLES</div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.8">
+        <div>• Move with <strong style="color:var(--washi)">WASD / Arrow Keys</strong></div>
+        <div>• Aim with your <strong style="color:var(--washi)">Mouse</strong></div>
+        <div>• Attacks trigger <strong style="color:var(--washi)">automatically</strong> when enemies are in range</div>
+        <div>• Survive waves</div>
+        <div>• Stats increase each wave automatically</div>
+        <div>• Choose your <strong style="color:var(--washi)">Avatar & Arena</strong> wisely</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Game HUD ═══ -->
+<div id="hud" class="hidden">
+  <div class="player-card">
+    <img class="player-avatar" id="playerAvatar" src="" alt="">
+    <div class="player-meta">
+      <div class="player-name" id="playerName">—</div>
+      <div class="player-title" id="playerTitle">—</div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-item"><span class="stat-label">ATK</span><span class="stat-val" id="statAtk">—</span></div>
+      <div class="stat-item"><span class="stat-label">SPD</span><span class="stat-val" id="statSpd">—</span></div>
+      <div class="stat-item"><span class="stat-label">KB</span><span class="stat-val" id="statKb">—</span></div>
+      <div class="stat-item"><span class="stat-label">CRIT</span><span class="stat-val" id="statCrit">—</span></div>
+    </div>
+    <div class="hp-section">
+      <div class="hp-bar-large">
+        <div class="hp-fill-large" id="hpFillLarge" style="width:100%"></div>
+        <div class="hp-text"><span id="hpText">100</span> / <span id="hpMaxText">100</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wave-status">
+    <div class="wave-tracker" id="waveTracker"></div>
+    <div class="wave-label" id="waveLabel">Wave 1</div>
+  </div>
+
+  <div class="hud-resources">
+    <div class="enemy-pill" id="hudEnemies">0 remaining</div>
+  </div>
+</div>
+<div id="controls" class="hidden">
+  <div class="ctrl-pill">WASD / Arrows — Move</div>
+  <div class="ctrl-pill">Mouse — Aim</div>
+  <div class="ctrl-pill">Auto-attack on lock</div>
+</div>
+
+<!-- ═══ Game Over ═══ -->
+<div id="gameover">
+  <div class="panel">
+    <h2>討死 — Fallen</h2>
+    <div class="stat">Waves Survived: <span id="goWave">0</span></div>
+    <div class="stat">Enemies Defeated: <span id="goKills">0</span></div>
+    <div class="btns">
+      <button class="retry" onclick="restartGame()">Retry</button>
+      <button class="back" onclick="backToMenu()">Return to Dojo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Game Canvas ═══ -->
+<canvas id="gameCanvas" style="display:none"></canvas>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const S = {
+  level:1, xp:0, avatarId:0, mapId:0,
+  totalKills:0, bestWave:0, totalRuns:0
+};
+let running=false, gameThread=null;
+
+// ═══════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════
+const MAPS=[
+  {id:0,name:"Crimson Hollow",desc:"A blood-red cavern beneath the earth",color:"#8B1A1A",img:"assets/maps/map_1.png"},
+  {id:1,name:"Misty Peaks",desc:"Fog-shrouded mountain pass",color:"#2E4A3E",img:"assets/maps/map_2.png"},
+  {id:2,name:"Shadow Marsh",desc:"Dark waters reflect no light",color:"#1A1A2E",img:"assets/maps/map_3.png"},
+  {id:3,name:"Golden Temple",desc:"Ruins of a forgotten shrine",color:"#4A3A1A",img:"assets/maps/map_4.png"},
+  {id:4,name:"Frozen Abyss",desc:"Eternal winter grips the land",color:"#1A3A4A",img:"assets/maps/map_5.png"},
+  {id:5,name:"Ember Wastes",desc:"Ash falls like snow on scorched ground",color:"#4A2A1A",img:"assets/maps/map_6.png"},
+  {id:6,name:"Jade Cavern",desc:"Ancient tunnels pulse with green light",color:"#1A4A2A",img:"assets/maps/map_7.png"},
+  {id:7,name:"Storm Ridge",desc:"Lightning splits the sky endlessly",color:"#2A2A4A",img:"assets/maps/map_8.png"},
+  {id:8,name:"Void Realm",desc:"Reality bends in the darkness",color:"#0A0A1A",img:"assets/maps/map_9.png"},
+  {id:9,name:"Aurora Drift",desc:"Colors dance across the frozen expanse",color:"#1A3A3A",img:"assets/maps/map_10.png"}
+];
+const AVATARS=[
+  {id:0,name:"White Blade",title:"Shiro Ronin",armor:"#F4F2EC",trim:"#1E2E6B",img:"assets/player/avatar_1.png"},
+  {id:1,name:"Shadow Ronin",title:"Kage Wanderer",armor:"#16161B",trim:"#5468C4",img:"assets/player/avatar_2.png"},
+  {id:2,name:"Indigo Sentinel",title:"Ai Guardian",armor:"#1E2E6B",trim:"#F4F2EC",img:"assets/player/avatar_3.png"},
+  {id:3,name:"Gilded Blossom",title:"Kinka Warrior",armor:"#F4F2EC",trim:"#C9A34E",img:"assets/player/avatar_4.png"},
+  {id:4,name:"Ember Wolf",title:"Honoo Kensei",armor:"#16161B",trim:"#A62639",img:"assets/player/avatar_5.png"}
+];
+const AVATAR_IMGS=[];
+AVATARS.forEach((a,i)=>{const img=new Image();img.src=a.img;AVATAR_IMGS.push(img)});
+function getStats(){
+  return {
+    maxHp:100,atk:12,spd:160,kb:90,crit:.12,
+    regen:0,shield:0,vamp:0,cooldown:650
+  };
+}
+function xpNeeded(lvl){return 50+lvl*30}
+
+// ═══════════════════════════════════════
+//  ASSETS
+// ═══════════════════════════════════════
+const ENEMY_IMGS={1:[],2:[],3:[]};
+const MAP_IMGS=[];
+function preloadEnemyImages(){
+  [1,2,3].forEach(tier=>{
+    const count=tier===3?2:3;
+    for(let i=1;i<=count;i++){
+      const img=new Image();
+      img.src=`assets/enemies/enemy_tier${tier}_${i}.png`;
+      ENEMY_IMGS[tier].push(img);
+    }
+  });
+}
+function preloadMapImages(){
+  MAPS.forEach(m=>{
+    const img=new Image();
+    img.src=m.img;
+    MAP_IMGS.push(img);
+  });
+}
+preloadEnemyImages();
+preloadMapImages();
+
+// ═══════════════════════════════════════
+//  EMBER BACKGROUND
+// ═══════════════════════════════════════
+const bgC=document.getElementById('bgCanvas');
+const bgX=bgC.getContext('2d');
+const embers=Array.from({length:22},()=>({
+  x:Math.random()*innerWidth,y:Math.random()*innerHeight,
+  spd:.3+Math.random()*.5,r:1+Math.random()*2,
+  phase:Math.random()*Math.PI*2,amp:15+Math.random()*25,
+  alpha:.15+Math.random()*.35,
+  color:['#7C8CE8','#5468C4','#C9A34E'][Math.floor(Math.random()*3)]
+}));
+function resizeBg(){bgC.width=innerWidth;bgC.height=innerHeight}
+window.addEventListener('resize',resizeBg);resizeBg();
+(function animBg(){
+  bgX.clearRect(0,0,bgC.width,bgC.height);
+  const t=performance.now()/1000;
+  for(const e of embers){
+    e.y-=e.spd;e.x+=Math.sin(t+e.phase)*e.amp*.01;
+    if(e.y<-10){e.y=bgC.height+10;e.x=Math.random()*bgC.width}
+    bgX.globalAlpha=e.alpha;
+    bgX.fillStyle=e.color;
+    bgX.beginPath();bgX.arc(e.x,e.y,e.r,0,Math.PI*2);bgX.fill();
+  }
+  bgX.globalAlpha=1;
+  requestAnimationFrame(animBg);
+})();
+
+// ═══════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════
+function openModal(id){
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id){document.getElementById(id).classList.remove('active')}
+
+// ═══════════════════════════════════════
+//  MAP SELECTION
+// ═══════════════════════════════════════
+(function(){
+  const g=document.getElementById('mapGrid');
+  MAPS.forEach(m=>{
+    const c=document.createElement('div');c.className='map-card'+(m.id===S.mapId?' selected':'');
+    c.innerHTML=`<img src="${m.img}" alt="${m.name}"><div class="info"><h3>${m.name}</h3><p>${m.desc}</p></div>`;
+    c.onclick=()=>{S.mapId=m.id;g.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');closeModal('mapModal');startGame()};
+    g.appendChild(c);
+  });
+})();
+
+// ═══════════════════════════════════════
+//  AVATAR SELECTION
+// ═══════════════════════════════════════
+(function(){
+  const g=document.getElementById('avatarGrid');
+  AVATARS.forEach(a=>{
+    const c=document.createElement('div');c.className='avatar-card'+(a.id===S.avatarId?' selected':'');
+    c.innerHTML=`<img src="${a.img}" alt="${a.name}"><h3>${a.name}</h3><p>${a.title}</p><div class="status">${a.id===S.avatarId?'Equipped':'Select'}</div>`;
+    c.onclick=()=>{S.avatarId=a.id;g.querySelectorAll('.avatar-card').forEach(x=>{x.classList.remove('selected');x.querySelector('.status').textContent='Select'});c.classList.add('selected');c.querySelector('.status').textContent='Equipped';updateMenuLevel()};
+    g.appendChild(c);
+  });
+})();
+
+// ═══════════════════════════════════════
+//  GAME ENGINE
+// ═══════════════════════════════════════
+const gc=document.getElementById('gameCanvas');
+const gx=gc.getContext('2d');
+  let keys={};let mouseX=0,mouseY=0;let player,enemies,wave,kills,spawnedThisWave,waveTimer,lastSpawn;
+
+document.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=keys[e.code]=true});
+document.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=keys[e.code]=false});
+gc.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+
+function startGame(){
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('bgCanvas').style.display='none';
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('controls').classList.remove('hidden');
+  gc.style.display='block';
+  gc.width=innerWidth;gc.height=innerHeight;
+
+  const st=getStats();
+  const av=AVATARS[S.avatarId];
+  player={x:gc.width/2,y:gc.height/2,hp:st.maxHp,maxHp:st.maxHp,
+    r:20,angle:0,stats:st,armor:av.armor,trim:av.trim,
+    lastAtk:0,invUntil:0};
+  enemies=[];wave=0;kills=0;spawnedThisWave=0;waveTimer=0;lastSpawn=0;
+  mouseX=player.x+100;mouseY=player.y;
+  document.getElementById('playerAvatar').src=av.img;
+  document.getElementById('playerName').textContent=av.name;
+  document.getElementById('playerTitle').textContent=av.title;
+  nextWave();
+  if(!running){running=true;gameLoop()}
+}
+
+function nextWave(){
+  wave++;waveTimer=0;lastSpawn=0;spawnedThisWave=0;
+  const scale=1+(wave-1)*0.05;
+  const base=getStats();
+  player.stats={
+    maxHp:Math.round(base.maxHp*scale),
+    atk:Math.round(base.atk*scale*100)/100,
+    spd:base.spd+wave*2,
+    kb:base.kb+wave*1.5,
+    crit:Math.min(.6,base.crit+wave*0.01),
+    regen:base.regen+wave*0.05,
+    shield:base.shield,
+    vamp:base.vamp,
+    cooldown:Math.max(220,base.cooldown-wave*8)
+  };
+  if(player.hp>player.stats.maxHp)player.hp=player.stats.maxHp;
+  updatePlayerStats();
+  updateWaveTracker();
+}
+
+function spawnEnemy(){
+  const tier=wave<=3?1:wave<=8?(Math.random()<.4?2:1):(Math.random()<.3?3:Math.random()<.5?2:1);
+  const edge=Math.floor(Math.random()*4);
+  const m=30;
+  let x,y;
+  if(edge===0){x=Math.random()*gc.width;y=-m}
+  else if(edge===1){x=gc.width+m;y=Math.random()*gc.height}
+  else if(edge===2){x=Math.random()*gc.width;y=gc.height+m}
+  else{x=-m;y=Math.random()*gc.height}
+  const baseHp=18+(tier-1)*26;const baseSpd=42+(tier-1)*10;
+  const baseDmg=4+(tier-1)*4;
+  const colors={1:'#5468C4',2:'#C9A34E',3:'#E0455A'};
+  const skinIdx=Math.floor(Math.random()*(ENEMY_IMGS[tier]?.length||3));
+  const waveSpeedMult=0.5+wave*0.05;
+  enemies.push({x,y,hp:baseHp*(1+(wave-1)*.12),maxHp:baseHp*(1+(wave-1)*.12),
+    r:(8+tier*3)*4,spd:baseSpd*.06*waveSpeedMult,dmg:baseDmg,tier,color:colors[tier],
+    state:'chase',knockT:0,knockX:0,knockY:0,knockSX:0,knockSY:0,
+    deathAlpha:1,lastHit:0,skinIdx});
+}
+
+function gameLoop(){
+  if(!running)return;
+  const now=performance.now();
+  const dt=Math.min(now-(gameThread||now),50)/1000;
+  gameThread=now;
+  update(dt,now);render(now);
+  requestAnimationFrame(gameLoop);
+}
+
+function update(dt,now){
+  const st=player.stats;
+  // Movement
+  let mx=0,my=0;
+  if(keys['w']||keys['arrowup'])my=-1;
+  if(keys['s']||keys['arrowdown'])my=1;
+  if(keys['a']||keys['arrowleft'])mx=-1;
+  if(keys['d']||keys['arrowright'])mx=1;
+  const len=Math.sqrt(mx*mx+my*my);
+  if(len>0){mx/=len;my/=len}
+  player.x+=mx*st.spd*dt;player.y+=my*st.spd*dt;
+  player.x=Math.max(player.r,Math.min(gc.width-player.r,player.x));
+  player.y=Math.max(player.r,Math.min(gc.height-player.r,player.y));
+
+  // Aim
+  player.angle=Math.atan2(mouseY-player.y,mouseX-player.x);
+
+  // Regen
+  if(st.regen>0)player.hp=Math.min(player.maxHp,player.hp+st.regen*dt);
+
+  // Crosshair
+  const crossDist=45;
+  const cx=player.x+Math.cos(player.angle)*crossDist;
+  const cy=player.y+Math.sin(player.angle)*crossDist;
+
+  // Spawning
+  const count=Math.min(40,3+wave*2);
+  const interval=Math.max(180,750-wave*15);
+  waveTimer+=dt*1000;
+  if(spawnedThisWave<count&&waveTimer-lastSpawn>interval){spawnEnemy();lastSpawn=waveTimer;spawnedThisWave++}
+
+  // Enemies
+  let nearest=null,nearestDist=Infinity;
+  for(const e of enemies){
+    if(e.state==='knock'){
+      e.knockT+=dt/.26;
+      if(e.knockT>=1){e.x=e.knockX;e.y=e.knockY;e.state='chase'}
+      else{const t=1-(1-e.knockT)**2;e.x=e.knockSX+(e.knockX-e.knockSX)*t;e.y=e.knockSY+(e.knockY-e.knockSY)*t}
+      continue;
+    }
+    if(e.state==='dying'){
+      e.knockT+=dt/.35;
+      const t=1-(1-e.knockT)**2;
+      e.x=e.knockSX+(e.knockX-e.knockSX)*t;e.y=e.knockSY+(e.knockY-e.knockSY)*t;
+      e.deathAlpha=1-e.knockT;
+      if(e.knockT>=1){e.remove=true}
+      continue;
+    }
+    const dx=player.x-e.x,dy=player.y-e.y;
+    const dist=Math.sqrt(dx*dx+dy*dy)||.001;
+    e.x+=dx/dist*e.spd*dt*60;e.y+=dy/dist*e.spd*dt*60;
+    if(dist<e.r+player.r&&now>player.invUntil&&now-e.lastHit>550){
+      e.lastHit=now;
+      if(Math.random()>=st.shield){player.hp-=e.dmg;player.invUntil=now+500}
+    }
+    const dc=Math.sqrt((e.x-cx)**2+(e.y-cy)**2);
+    if(dc<e.r+26&&dc<nearestDist){nearestDist=dc;nearest=e}
+  }
+  enemies=enemies.filter(e=>!e.remove);
+
+  // Auto attack
+  if(nearest&&now-player.lastAtk>=st.cooldown){
+    player.lastAtk=now;
+    const isCrit=Math.random()<st.crit;
+    const dmg=st.atk*(isCrit?2:1);
+    nearest.hp-=dmg;
+    // popups
+    popups.push({x:nearest.x,y:nearest.y,text:''+Math.round(dmg),crit:isCrit,t0:now});
+    if(nearest.hp<=0){
+      const dx=nearest.x-player.x,dy=nearest.y-player.y;
+      const d=Math.sqrt(dx*dx+dy*dy)||1;
+      nearest.state='dying';nearest.knockT=0;nearest.knockSX=nearest.x;nearest.knockSY=nearest.y;
+      nearest.knockX=nearest.x-dx/d*nearest.r*1.5;nearest.knockY=nearest.y-dy/d*nearest.r*1.5;
+      kills++;
+      if(st.vamp>0)player.hp=Math.min(player.maxHp,player.hp+player.maxHp*st.vamp);
+    }else{
+      const push=Math.random()<.7;
+      const dx=nearest.x-player.x,dy=nearest.y-player.y;
+      const d=Math.sqrt(dx*dx+dy*dy)||1;
+      let dirX=dx/d,dirY=dy/d;
+      if(!push){dirX=-dirX;dirY=-dirY}
+      const jitter=(Math.random()*40-20)*Math.PI/180;
+      const rdx=dirX*Math.cos(jitter)-dirY*Math.sin(jitter);
+      const rdy=dirX*Math.sin(jitter)+dirY*Math.cos(jitter);
+      const kbDist=st.kb;
+      nearest.state='knock';nearest.knockT=0;nearest.knockSX=nearest.x;nearest.knockSY=nearest.y;
+      nearest.knockX=Math.max(nearest.r,Math.min(gc.width-nearest.r,nearest.x+rdx*kbDist));
+      nearest.knockY=Math.max(nearest.r,Math.min(gc.height-nearest.r,nearest.y+rdy*kbDist));
+    }
+  }
+
+  // Popups
+  popups=popups.filter(p=>now-p.t0<600);
+
+  // Wave clear
+  if(enemies.filter(e=>e.state!=='dying').length===0&&waveTimer>2000)nextWave();
+
+  // Death
+  if(player.hp<=0){endGame();return}
+
+  // HUD
+  const alive=enemies.filter(e=>e.state!=='dying').length;
+  document.getElementById('hudEnemies').textContent=alive+' remaining';
+}
+
+let popups=[];
+function render(now){
+  gx.clearRect(0,0,gc.width,gc.height);
+  // BG
+  const map=MAPS[S.mapId];
+  const mapImg=MAP_IMGS[S.mapId];
+  if(mapImg?.complete&&mapImg.naturalWidth){
+    gx.drawImage(mapImg,0,0,gc.width,gc.height);
+  } else {
+    gx.fillStyle=map.color;gx.fillRect(0,0,gc.width,gc.height);
+  }
+  // Grid
+  gx.strokeStyle='rgba(255,255,255,.04)';gx.lineWidth=1;
+  for(let x=0;x<gc.width;x+=48){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,gc.height);gx.stroke()}
+  for(let y=0;y<gc.height;y+=48){gx.beginPath();gx.moveTo(0,y);gx.lineTo(gc.width,y);gx.stroke()}
+
+   // Enemies
+   for(const e of enemies){
+     gx.globalAlpha=e.deathAlpha;
+     // Glow
+     const grd=gx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*1.9);
+     grd.addColorStop(0,e.color+'88');grd.addColorStop(1,e.color+'00');
+     gx.fillStyle=grd;gx.beginPath();gx.arc(e.x,e.y,e.r*1.9,0,Math.PI*2);gx.fill();
+     // Body
+     const img=ENEMY_IMGS[e.tier]?.[e.skinIdx];
+     if(img?.complete){
+       gx.drawImage(img,e.x-e.r,e.y-e.r,e.r*2,e.r*2);
+     } else {
+       gx.fillStyle=e.color;gx.beginPath();gx.arc(e.x,e.y,e.r,0,Math.PI*2);gx.fill();
+       gx.strokeStyle=e.color;gx.lineWidth=2;gx.stroke();
+     }
+     // HP bar
+    if(e.state!=='dying'){
+      const bw=e.r*2,bh=3,bx=e.x-e.r,by=e.y-e.r-6;
+      gx.fillStyle='rgba(0,0,0,.5)';gx.fillRect(bx,by,bw,bh);
+      gx.fillStyle='#E0455A';gx.fillRect(bx,by,bw*(e.hp/e.maxHp),bh);
+    }
+    gx.globalAlpha=1;
+  }
+
+  // Player
+  const st=player.stats;
+  const pGrd=gx.createRadialGradient(player.x,player.y,0,player.x,player.y,player.r*2.3);
+  pGrd.addColorStop(0,player.trim+'66');pGrd.addColorStop(1,player.trim+'00');
+  gx.fillStyle=pGrd;gx.beginPath();gx.arc(player.x,player.y,player.r*2.3,0,Math.PI*2);gx.fill();
+  const avImg=AVATAR_IMGS[S.avatarId];
+  if(avImg?.complete&&avImg.naturalWidth){
+    gx.save();gx.beginPath();gx.arc(player.x,player.y,player.r,0,Math.PI*2);gx.clip();
+    gx.drawImage(avImg,player.x-player.r,player.y-player.r,player.r*2,player.r*2);
+    gx.restore();
+  } else {
+    gx.fillStyle=player.armor;gx.strokeStyle=player.trim;gx.lineWidth=3;
+    gx.beginPath();
+    gx.moveTo(player.x,player.y-player.r);
+    gx.lineTo(player.x+player.r*.8,player.y);
+    gx.lineTo(player.x,player.y+player.r);
+    gx.lineTo(player.x-player.r*.8,player.y);
+    gx.closePath();gx.fill();gx.stroke();
+  }
+  // Blade tip
+  const bLen=player.r*1.9;
+  const bx=player.x+Math.cos(player.angle)*bLen;
+  const by=player.y+Math.sin(player.angle)*bLen;
+  const tGrd=gx.createRadialGradient(bx,by,0,bx,by,8);
+  tGrd.addColorStop(0,'#F4F2ECAA');tGrd.addColorStop(1,'#F4F2EC00');
+  gx.fillStyle=tGrd;gx.beginPath();gx.arc(bx,by,8,0,Math.PI*2);gx.fill();
+
+  // Crosshair
+  const crossDist=45;
+  const ccx=player.x+Math.cos(player.angle)*crossDist;
+  const ccy=player.y+Math.sin(player.angle)*crossDist;
+  const locked=enemies.some(e=>e.state==='chase'&&Math.sqrt((e.x-ccx)**2+(e.y-ccy)**2)<e.r+26);
+  const cColor=locked?'#C9A34E':'#7C8CE8';
+  const cR=locked?18:10;
+  const pulse=locked?1+.12*Math.sin(now/130):1;
+  gx.strokeStyle=cColor;gx.lineWidth=2;gx.globalAlpha=locked?.9:.5;
+  gx.beginPath();gx.arc(ccx,ccy,cR*pulse,0,Math.PI*2);gx.stroke();
+  gx.beginPath();gx.moveTo(ccx,ccy-cR*pulse-4);gx.lineTo(ccx,ccy-cR*pulse+4);gx.stroke();
+  gx.beginPath();gx.moveTo(ccx,ccy+cR*pulse-4);gx.lineTo(ccx,ccy+cR*pulse+4);gx.stroke();
+  gx.beginPath();gx.moveTo(ccx-cR*pulse-4,ccy);gx.lineTo(ccx-cR*pulse+4,ccy);gx.stroke();
+  gx.beginPath();gx.moveTo(ccx+cR*pulse-4,ccy);gx.lineTo(ccx+cR*pulse+4,ccy);gx.stroke();
+  gx.globalAlpha=1;
+
+  // Popups
+  for(const p of popups){
+    const t=(now-p.t0)/600;
+    gx.globalAlpha=1-t;gx.font='bold 14px serif';gx.fillStyle=p.crit?'#C9A34E':'#F4F2EC';
+    gx.textAlign='center';gx.fillText(p.text,p.x,p.y-t*40);
+  }
+  gx.globalAlpha=1;
+}
+
+function updatePlayerStats(){
+  const st=player.stats;
+  document.getElementById('statAtk').textContent=Math.round(st.atk);
+  document.getElementById('statSpd').textContent=Math.round(st.spd);
+  document.getElementById('statKb').textContent=Math.round(st.kb);
+  document.getElementById('statCrit').textContent=Math.round(st.crit*100)+'%';
+  document.getElementById('hpText').textContent=Math.ceil(player.hp);
+  document.getElementById('hpMaxText').textContent=player.maxHp;
+  document.getElementById('hpFillLarge').style.width=(player.hp/player.maxHp*100)+'%';
+}
+function updateWaveTracker(){
+  const tracker=document.getElementById('waveTracker');
+  tracker.innerHTML='';
+  const showCount=Math.min(7,wave+3);
+  const startWave=Math.max(1,wave-2);
+  for(let i=startWave;i<startWave+showCount;i++){
+    const dot=document.createElement('div');
+    dot.className='wave-dot';
+    if(i<wave) dot.classList.add('dead');
+    else if(i===wave) dot.classList.add('current');
+    else dot.classList.add('active');
+    tracker.appendChild(dot);
+  }
+  document.getElementById('waveLabel').textContent='Wave '+wave;
+}
+function endGame(){
+  running=false;
+  S.totalKills+=kills;S.totalRuns++;
+  if(wave>S.bestWave)S.bestWave=wave;
+  // Level ups
+  let xpGain=kills*5;
+  while(xpGain>0){const need=xpNeeded(S.level);if(S.xp+xpGain>=need){xpGain-=need-S.xp;S.xp=0;S.level++}else{S.xp+=xpGain;xpGain=0}}
+  document.getElementById('goKills').textContent=kills;
+  document.getElementById('gameover').classList.add('active');
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('controls').classList.add('hidden');
+}
+
+function restartGame(){
+  document.getElementById('gameover').classList.remove('active');
+  startGame();
+}
+function backToMenu(){
+  running=false;
+  document.getElementById('gameover').classList.remove('active');
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('controls').classList.add('hidden');
+  gc.style.display='none';
+  document.getElementById('bgCanvas').style.display='block';
+  document.getElementById('menu').classList.remove('hidden');
+  player=null;
+  updateMenuLevel();
+}
+
+window.addEventListener('resize',()=>{if(running){gc.width=innerWidth;gc.height=innerHeight}});
+</script>
+</body>
+</html>
