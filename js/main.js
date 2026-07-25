@@ -41,7 +41,18 @@ const MAPS=[
   {id:6,name:"Jade Cavern",desc:"Ancient tunnels pulse with green light",color:"#1A4A2A",img:"assets/maps/map_7.png"},
   {id:7,name:"Storm Ridge",desc:"Lightning splits the sky endlessly",color:"#2A2A4A",img:"assets/maps/map_8.png"},
   {id:8,name:"Void Realm",desc:"Reality bends in the darkness",color:"#0A0A1A",img:"assets/maps/map_9.png"},
-  {id:9,name:"Aurora Drift",desc:"Colors dance across the frozen expanse",color:"#1A3A3A",img:"assets/maps/map_10.png"}
+  {id:9,name:"Aurora Drift",desc:"Colors dance across the frozen expanse",color:"#1A3A3A",img:"assets/maps/map_10.png"},
+  {id:10,name:"Blood Moon Pass",desc:"A crimson sky bleeds over jagged cliffs",color:"#5A1A2A",img:"assets/maps/map_11.png"},
+  {id:11,name:"Whispering Pines",desc:"Ancient trees hum with unseen spirits",color:"#2A3A1A",img:"assets/maps/map_12.png"},
+  {id:12,name:"Crimson Throne",desc:"The seat of a fallen warlord",color:"#6A1A1A",img:"assets/maps/map_13.png"},
+  {id:13,name:"Obsidian Gate",desc:"Black stone walls that swallow light",color:"#1A1A1A",img:"assets/maps/map_14.png"},
+  {id:14,name:"Scarred Wastes",desc:"Craters scar the ashen landscape",color:"#4A1A1A",img:"assets/maps/map_15.png"},
+  {id:15,name:"Thunder Plains",desc:"Lightning dances across endless skies",color:"#3A3A5A",img:"assets/maps/map_16.png"},
+  {id:16,name:"Moonlit Valley",desc:"Pale light reveals hidden paths",color:"#2A2A4A",img:"assets/maps/map_17.png"},
+  {id:17,name:"Iron Bastion",desc:"Fortified walls of unbreakable steel",color:"#4A4A4A",img:"assets/maps/map_18.png"},
+  {id:18,name:"Ashen Garden",desc:"Flowers bloom in a world of fire",color:"#3A2A1A",img:"assets/maps/map_19.png"},
+  {id:19,name:"Oracle's Peak",desc:"Visions dance in the mountain mist",color:"#1A3A5A",img:"assets/maps/map_20.png"},
+  {id:20,name:"Eclipse Plains",desc:"Darkness devours the horizon",color:"#0A0A15",img:"assets/maps/map_21.png"}
 ];
 const AVATARS=[
   {id:0,name:"White Blade",title:"Shiro Ronin",armor:"#F4F2EC",trim:"#1E2E6B",img:"assets/player/avatar_1.png"},
@@ -67,7 +78,7 @@ const ENEMY_IMGS={1:[],2:[],3:[]};
 const MAP_IMGS=[];
 function preloadEnemyImages(){
   [1,2,3].forEach(tier=>{
-    const count=tier===3?2:3;
+    const count=tier===3?5:tier===2?7:6;
     for(let i=1;i<=count;i++){
       const img=new Image();
       img.src=`assets/enemies/enemy_tier${tier}_${i}.png`;
