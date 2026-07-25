@@ -173,6 +173,22 @@
   </div>
 </div>
 
+<!-- ═══ Pause Menu ═══ -->
+<div id="pauseMenu" class="hidden">
+  <div class="panel">
+    <h2>Pause</h2>
+    <div class="pause-actions">
+      <button id="resumeBtn" class="pause-primary">Resume</button>
+      <button id="quitBtn" class="pause-secondary">Quit</button>
+    </div>
+    <div class="volume-panel">
+      <label for="volumeSlider">Volume</label>
+      <input type="range" id="volumeSlider" min="0" max="100" value="40">
+      <button id="muteToggleBtn" class="pause-toggle">Mute</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ Game Canvas ═══ -->
 <canvas id="gameCanvas" class="game-canvas"></canvas>
 

@@ -5,7 +5,9 @@ const S = {
   level:1, xp:0, avatarId:0, mapId:0,
   totalKills:0, bestWave:0, totalRuns:0
 };
-let running=false, gameThread=null;
+let running=false, gameThread=null, paused=false;
+let volume=0.4, muted=false, activeMusic='menu';
+let menuMusic=null, gameMusic=null;
 
 // ═══════════════════════════════════════
 //  DATA
@@ -100,6 +102,156 @@ function openModal(id){
 }
 function closeModal(id){document.getElementById(id).classList.remove('active')}
 
+function initAudio(){
+  if(!menuMusic){
+    menuMusic=new Audio('assets/menu_music/Orbital Lobby_1.mp3');
+    menuMusic.loop=true;
+    menuMusic.volume=volume;
+  }
+  if(!gameMusic){
+    gameMusic=new Audio();
+    gameMusic.loop=false;
+    gameMusic.volume=volume;
+  }
+}
+function applyAudioVolume(){
+  initAudio();
+  const effective=muted?0:volume;
+  if(menuMusic)menuMusic.volume=effective;
+  if(gameMusic)gameMusic.volume=effective;
+  const slider=document.getElementById('volumeSlider');
+  if(slider)slider.value=Math.round(volume*100);
+  const muteBtn=document.getElementById('muteToggleBtn');
+  if(muteBtn)muteBtn.textContent=muted?'Unmute':'Mute';
+}
+function setVolume(value){
+  volume=Math.max(0,Math.min(1,value));
+  if(volume<=0.01){muted=true;}else if(muted){muted=false;}
+  applyAudioVolume();
+}
+function toggleMute(){
+  muted=!muted;
+  if(!muted&&volume<=0.01)volume=0.4;
+  applyAudioVolume();
+}
+function playMenuMusic(){
+  initAudio();
+  activeMusic='menu';
+  if(menuMusic){menuMusic.currentTime=0; menuMusic.play().catch(()=>{});} 
+  if(gameMusic)gameMusic.pause();
+  applyAudioVolume();
+}
+function playGameMusic(){
+  initAudio();
+  activeMusic='game';
+  const files=GAME_MUSIC_FILES;
+  if(gameMusic&&files.length){
+    gameMusic.pause();
+    gameMusic.src=files[Math.floor(Math.random()*files.length)];
+    gameMusic.loop=false;
+    gameMusic.currentTime=0;
+    gameMusic.onended=()=>{if(activeMusic==='game')playGameMusic()};
+    gameMusic.play().catch(()=>{});
+  }
+  if(menuMusic)menuMusic.pause();
+  applyAudioVolume();
+}
+function pauseMusic(){
+  if(menuMusic)menuMusic.pause();
+  if(gameMusic)gameMusic.pause();
+}
+function resumeMusic(){
+  if(activeMusic==='game')playGameMusic();
+  else playMenuMusic();
+}
+function setupPauseMenu(){
+  const pauseMenu=document.getElementById('pauseMenu');
+  const resumeBtn=document.getElementById('resumeBtn');
+  const quitBtn=document.getElementById('quitBtn');
+  const muteBtn=document.getElementById('muteToggleBtn');
+  const volumeSlider=document.getElementById('volumeSlider');
+
+  resumeBtn.addEventListener('click',()=>togglePauseMenu(false));
+  quitBtn.addEventListener('click',()=>{
+    togglePauseMenu(false);
+    backToMenu();
+  });
+  muteBtn.addEventListener('click',toggleMute);
+  volumeSlider.addEventListener('input',e=>setVolume(parseInt(e.target.value,10)/100));
+
+  document.addEventListener('keydown',e=>{
+    if((e.key==='Escape'||e.code==='Escape')){
+      if(running && player && !document.querySelector('.modal-overlay.active')){
+        e.preventDefault();
+        togglePauseMenu();
+      }
+    }
+  });
+
+  document.addEventListener('click',()=>{
+    if(!menuMusic && !gameMusic){
+      playMenuMusic();
+    }
+  }, {once:true});
+
+  applyAudioVolume();
+  pauseMenu.classList.add('hidden');
+}
+function togglePauseMenu(force){
+  if(!running || !player){return;}
+  const pauseMenu=document.getElementById('pauseMenu');
+  const shouldPause=typeof force==='boolean'?force:!paused;
+  paused=shouldPause;
+  if(shouldPause){
+    pauseMenu.classList.remove('hidden');
+    pauseMusic();
+  } else {
+    pauseMenu.classList.add('hidden');
+    resumeMusic();
+  }
+}
+
+const GAME_MUSIC_FILES=[
+  'assets/game_music/Starforge Ceilidh.mp3',
+  'assets/game_music/Paper Lantern Run.mp3',
+  'assets/game_music/Paper Lantern Run (1).mp3',
+  'assets/game_music/Moonfall Over Zeta_1.mp3',
+  'assets/game_music/Bamboo Sprint.mp3',
+  'assets/game_music/Bamboo Sprint 2.mp3'
+];
+const PLAYER_DAMAGE_FILES=[
+  'assets/player_damage/heavy_bomb_explosion_#1-1784908403871.mp3',
+  'assets/player_damage/heavy_bomb_explosion_#2-1784908407260.mp3',
+  'assets/player_damage/heavy_bomb_explosion_#3-1784908409673.mp3',
+  'assets/player_damage/heavy_bomb_explosion_#4-1784908409678.mp3'
+];
+const THROW_ENEMY_FILES=[
+  'assets/throw_enemy/martial_arts_throw_#1-1784907428450.mp3',
+  'assets/throw_enemy/martial_arts_throw_#2-1784907428454.mp3',
+  'assets/throw_enemy/martial_arts_throw_#3-1784907428456.mp3',
+  'assets/throw_enemy/martial_arts_throw_#4-1784907428460.mp3'
+];
+const MENU_SOUND_FILES=[
+  'assets/menu_sounds/click_1.wav',
+  'assets/menu_sounds/click_2.wav'
+];
+function playRandomSound(files){
+  if(!files||!files.length)return;
+  const a=new Audio(files[Math.floor(Math.random()*files.length)]);
+  a.volume=volume;
+  a.play().catch(()=>{});
+}
+
+setupPauseMenu();
+
+(function setupMenuSounds(){
+  const play=()=>playRandomSound(MENU_SOUND_FILES);
+  document.querySelectorAll('.menu-btns button').forEach(b=>b.addEventListener('click',play));
+  document.querySelectorAll('.modal-close').forEach(b=>b.addEventListener('click',play));
+  document.querySelectorAll('#pauseMenu button').forEach(b=>b.addEventListener('click',play));
+  document.querySelectorAll('#gameover .btns button').forEach(b=>b.addEventListener('click',play));
+})();
+
 // ═══════════════════════════════════════
 //  MAP SELECTION
 // ═══════════════════════════════════════
@@ -139,6 +291,8 @@ gc.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
 document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
 
 function startGame(){
+  paused=false;
+  document.getElementById('pauseMenu').classList.add('hidden');
   document.getElementById('menu').classList.add('hidden');
   document.getElementById('bgCanvas').style.display='none';
   document.getElementById('hud').classList.remove('hidden');
@@ -157,6 +311,7 @@ function startGame(){
   document.getElementById('playerName').textContent=av.name;
   document.getElementById('playerTitle').textContent=av.title;
   nextWave();
+  playGameMusic();
   if(!running){running=true;gameLoop()}
 }
 
@@ -203,9 +358,14 @@ function spawnEnemy(){
 function gameLoop(){
   if(!running)return;
   const now=performance.now();
-  const dt=Math.min(now-(gameThread||now),50)/1000;
-  gameThread=now;
-  update(dt,now);render(now);
+  if(!paused){
+    const dt=Math.min(now-(gameThread||now),50)/1000;
+    gameThread=now;
+    update(dt,now);render(now);
+  } else {
+    gameThread=now;
+    render(now);
+  }
   requestAnimationFrame(gameLoop);
 }
 
@@ -262,7 +422,7 @@ function update(dt,now){
     e.x+=dx/dist*e.spd*dt*60;e.y+=dy/dist*e.spd*dt*60;
     if(dist<e.r+player.r&&now>player.invUntil&&now-e.lastHit>550){
       e.lastHit=now;
-      if(Math.random()>=st.shield){player.hp-=e.dmg;player.invUntil=now+500}
+      if(Math.random()>=st.shield){player.hp-=e.dmg;player.invUntil=now+500;playRandomSound(PLAYER_DAMAGE_FILES)}
     }
     const dc=Math.sqrt((e.x-cx)**2+(e.y-cy)**2);
     if(dc<e.r+26&&dc<nearestDist){nearestDist=dc;nearest=e}
@@ -275,6 +435,7 @@ function update(dt,now){
     const isCrit=Math.random()<st.crit;
     const dmg=st.atk*(isCrit?2:1);
     nearest.hp-=dmg;
+    playRandomSound(THROW_ENEMY_FILES);
     // popups
     popups.push({x:nearest.x,y:nearest.y,text:''+Math.round(dmg),crit:isCrit,t0:now});
     if(nearest.hp<=0){
@@ -433,6 +594,8 @@ function updateWaveTracker(){
 }
 function endGame(){
   running=false;
+  paused=false;
+  document.getElementById('pauseMenu').classList.add('hidden');
   S.totalKills+=kills;S.totalRuns++;
   if(wave>S.bestWave)S.bestWave=wave;
   // Level ups
@@ -450,6 +613,8 @@ function restartGame(){
 }
 function backToMenu(){
   running=false;
+  paused=false;
+  document.getElementById('pauseMenu').classList.add('hidden');
   document.getElementById('gameover').classList.remove('active');
   document.getElementById('hud').classList.add('hidden');
   document.getElementById('controls').classList.add('hidden');
@@ -457,6 +622,7 @@ function backToMenu(){
   document.getElementById('bgCanvas').style.display='block';
   document.getElementById('menu').classList.remove('hidden');
   player=null;
+  playMenuMusic();
   updateMenuLevel();
 }
 
