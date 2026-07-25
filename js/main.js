@@ -153,7 +153,10 @@ function playGameMusic(){
     gameMusic.onended=()=>{if(activeMusic==='game')playGameMusic()};
     gameMusic.play().catch(()=>{});
   }
-  if(menuMusic)menuMusic.pause();
+  if(menuMusic){
+    menuMusic.pause();
+    menuMusic.currentTime=0;
+  }
   applyAudioVolume();
 }
 function pauseMusic(){
@@ -188,11 +191,24 @@ function setupPauseMenu(){
     }
   });
 
-  document.addEventListener('click',()=>{
-    if(!menuMusic && !gameMusic){
+  document.addEventListener('click',()=>playMenuMusic(), {once:true});
+  document.addEventListener('touchstart',()=>playMenuMusic(), {once:true});
+  document.addEventListener('keydown',()=>playMenuMusic(), {once:true});
+  playMenuMusic();
+
+  const startOverlay=document.getElementById('startOverlay');
+  if(startOverlay){
+    const startHandler=()=>{
       playMenuMusic();
-    }
-  }, {once:true});
+      startOverlay.style.display='none';
+      document.removeEventListener('click',startHandler);
+      document.removeEventListener('touchstart',startHandler);
+      document.removeEventListener('keydown',startHandler);
+    };
+    startOverlay.addEventListener('click',startHandler);
+    startOverlay.addEventListener('touchstart',startHandler);
+    startOverlay.addEventListener('keydown',startHandler);
+  }
 
   applyAudioVolume();
   pauseMenu.classList.add('hidden');
@@ -220,16 +236,16 @@ const GAME_MUSIC_FILES=[
   'assets/game_music/Bamboo Sprint 2.mp3'
 ];
 const PLAYER_DAMAGE_FILES=[
-  'assets/player_damage/heavy_bomb_explosion_#1-1784908403871.mp3',
-  'assets/player_damage/heavy_bomb_explosion_#2-1784908407260.mp3',
-  'assets/player_damage/heavy_bomb_explosion_#3-1784908409673.mp3',
-  'assets/player_damage/heavy_bomb_explosion_#4-1784908409678.mp3'
+  'assets/player_damage/heavy_bomb_explosion_1-1784908403871.mp3',
+  'assets/player_damage/heavy_bomb_explosion_2-1784908407260.mp3',
+  'assets/player_damage/heavy_bomb_explosion_3-1784908409673.mp3',
+  'assets/player_damage/heavy_bomb_explosion_4-1784908409678.mp3'
 ];
 const THROW_ENEMY_FILES=[
-  'assets/throw_enemy/martial_arts_throw_#1-1784907428450.mp3',
-  'assets/throw_enemy/martial_arts_throw_#2-1784907428454.mp3',
-  'assets/throw_enemy/martial_arts_throw_#3-1784907428456.mp3',
-  'assets/throw_enemy/martial_arts_throw_#4-1784907428460.mp3'
+  'assets/throw_enemy/martial_arts_throw_1-1784907428450.mp3',
+  'assets/throw_enemy/martial_arts_throw_2-1784907428454.mp3',
+  'assets/throw_enemy/martial_arts_throw_3-1784907428456.mp3',
+  'assets/throw_enemy/martial_arts_throw_4-1784907428460.mp3'
 ];
 const MENU_SOUND_FILES=[
   'assets/menu_sounds/click_1.wav',
@@ -260,7 +276,7 @@ setupPauseMenu();
   MAPS.forEach(m=>{
     const c=document.createElement('div');c.className='map-card'+(m.id===S.mapId?' selected':'');
     c.innerHTML=`<img src="${m.img}" alt="${m.name}"><div class="info"><h3>${m.name}</h3><p>${m.desc}</p></div>`;
-    c.onclick=()=>{S.mapId=m.id;g.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');closeModal('mapModal');startGame()};
+    c.onclick=()=>{playRandomSound(MENU_SOUND_FILES);S.mapId=m.id;g.querySelectorAll('.map-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');closeModal('mapModal');startGame()};
     g.appendChild(c);
   });
 })();
@@ -273,7 +289,7 @@ setupPauseMenu();
   AVATARS.forEach(a=>{
     const c=document.createElement('div');c.className='avatar-card'+(a.id===S.avatarId?' selected':'');
     c.innerHTML=`<img src="${a.img}" alt="${a.name}"><h3>${a.name}</h3><p>${a.title}</p><div class="status">${a.id===S.avatarId?'Equipped':'Select'}</div>`;
-    c.onclick=()=>{S.avatarId=a.id;g.querySelectorAll('.avatar-card').forEach(x=>{x.classList.remove('selected');x.querySelector('.status').textContent='Select'});c.classList.add('selected');c.querySelector('.status').textContent='Equipped';updateMenuLevel()};
+    c.onclick=()=>{playRandomSound(MENU_SOUND_FILES);S.avatarId=a.id;g.querySelectorAll('.avatar-card').forEach(x=>{x.classList.remove('selected');x.querySelector('.status').textContent='Select'});c.classList.add('selected');c.querySelector('.status').textContent='Equipped';updateMenuLevel()};
     g.appendChild(c);
   });
 })();
@@ -446,19 +462,16 @@ function update(dt,now){
       kills++;
       if(st.vamp>0)player.hp=Math.min(player.maxHp,player.hp+player.maxHp*st.vamp);
     }else{
-      const push=Math.random()<.7;
-      const dx=nearest.x-player.x,dy=nearest.y-player.y;
-      const d=Math.sqrt(dx*dx+dy*dy)||1;
-      let dirX=dx/d,dirY=dy/d;
-      if(!push){dirX=-dirX;dirY=-dirY}
-      const jitter=(Math.random()*40-20)*Math.PI/180;
-      const rdx=dirX*Math.cos(jitter)-dirY*Math.sin(jitter);
-      const rdy=dirX*Math.sin(jitter)+dirY*Math.cos(jitter);
-      const kbDist=st.kb;
-      nearest.state='knock';nearest.knockT=0;nearest.knockSX=nearest.x;nearest.knockSY=nearest.y;
-      nearest.knockX=Math.max(nearest.r,Math.min(gc.width-nearest.r,nearest.x+rdx*kbDist));
-      nearest.knockY=Math.max(nearest.r,Math.min(gc.height-nearest.r,nearest.y+rdy*kbDist));
-    }
+       const dx=nearest.x-player.x,dy=nearest.y-player.y;
+       const d=Math.sqrt(dx*dx+dy*dy)||1;
+       const jitter=(Math.random()*40-20)*Math.PI/180;
+       const rdx=dx/d*Math.cos(jitter)-dy/d*Math.sin(jitter);
+       const rdy=dx/d*Math.sin(jitter)+dy/d*Math.cos(jitter);
+       const kbDist=st.kb;
+       nearest.state='knock';nearest.knockT=0;nearest.knockSX=nearest.x;nearest.knockSY=nearest.y;
+       nearest.knockX=Math.max(nearest.r,Math.min(gc.width-nearest.r,nearest.x+rdx*kbDist));
+       nearest.knockY=Math.max(nearest.r,Math.min(gc.height-nearest.r,nearest.y+rdy*kbDist));
+     }
   }
 
   // Popups
