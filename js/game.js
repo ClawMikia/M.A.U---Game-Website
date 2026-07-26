@@ -71,6 +71,27 @@ const MENU_SOUND_FILES=[
   'assets/menu_sounds/click_2.wav'
 ];
 
+const TALISMANS=[
+  {id:'fire',emoji:'🔥',jp:'火 (Hi)',name:'Flame Talisman',desc:'Your attacks ignite enemies, dealing burn damage over time and slightly increasing attack power.',img:'assets/item_loots/Fire.png',color:'#E0455A'},
+  {id:'water',emoji:'💧',jp:'水 (Mizu)',name:'Water Talisman',desc:'Restores HP over several seconds and removes burning or poison effects.',img:'assets/item_loots/Water.png',color:'#38BDF8'},
+  {id:'thunder',emoji:'⚡',jp:'雷 (Kaminari)',name:'Thunder Talisman',desc:'Increases movement and attack speed while occasionally striking nearby enemies with lightning.',img:'assets/item_loots/Thunder.png',color:'#C9A34E'},
+  {id:'love',emoji:'💖',jp:'愛 (Ai)',name:'Heart Talisman',desc:'Grants a protective heart shield that absorbs damage and charms weak enemies for a short time.',img:'assets/item_loots/Love.png',color:'#E879F9'},
+  {id:'wind',emoji:'🌪',jp:'風 (Kaze)',name:'Wind Talisman',desc:'Boosts movement speed, jump height, dodge distance, and attack evasion.',img:'assets/item_loots/Wind.png',color:'#67E8F9'},
+  {id:'strength',emoji:'💪',jp:'力 (Chikara)',name:'Power Talisman',desc:'Temporarily doubles melee damage, increases knockback, and lets you break heavy objects.',img:'assets/item_loots/Strength.png',color:'#F97316'},
+  {id:'fortune',emoji:'🍀',jp:'運 (Un)',name:'Lucky Talisman',desc:'Increases item drop rate, critical hit chance, coin rewards, and rare loot probability.',img:'assets/item_loots/Fortune.png',color:'#4ADE80'},
+  {id:'body',emoji:'➕',jp:'体 (Karada)',name:'Vitality Talisman',desc:'Fully restores stamina, increases maximum HP, and grants temporary damage resistance.',img:'assets/item_loots/Body.png',color:'#A78BFA'},
+  {id:'gold',emoji:'💰',jp:'金 (Kin)',name:'Treasure Talisman',desc:'Instantly attracts nearby coins and increases all currency earned for a limited time.',img:'assets/item_loots/Gold.png',color:'#C9A34E'},
+  {id:'magic',emoji:'⭐',jp:'魔 (Ma)',name:'Mystic Talisman',desc:'Reduces skill cooldowns, boosts magic damage, and slightly regenerates mana or spirit energy.',img:'assets/item_loots/Magic.png',color:'#7C8CE8'},
+  {id:'health',emoji:'❤️',jp:'命 (Inochi)',name:'Life Talisman',desc:'Instantly restores HP and increases maximum HP for a short duration.',img:'assets/item_loots/Health.png',color:'#A62639'},
+  {id:'defense',emoji:'🔷',jp:'守 (Mamoru)',name:'Guardian Talisman',desc:'Raises defense, reduces incoming damage, and grants brief super armor.',img:'assets/item_loots/Defense.png',color:'#5468C4'},
+  {id:'attack',emoji:'⚔',jp:'攻 (Kō)',name:'Assault Talisman',desc:'Boosts physical attack power and increases combo damage.',img:'assets/item_loots/Attack.png',color:'#F4F2EC'},
+  {id:'agility',emoji:'👟',jp:'速 (Hayai)',name:'Swift Talisman',desc:'Increases movement speed, dodge speed, attack animation speed, and jump height.',img:'assets/item_loots/Agility.png',color:'#FBBF24'},
+  {id:'critical',emoji:'🎲',jp:'瞬 (Shun)',name:'Critical Talisman',desc:'Greatly increases critical hit rate and critical damage multiplier.',img:'assets/item_loots/Critical.png',color:'#C084FC'},
+  {id:'ultimate',emoji:'🌟',jp:'極 (Kiwami)',name:'Master Talisman',desc:'Temporarily boosts every primary stat by a moderate amount and grants immunity to debuffs.',img:'assets/item_loots/Ultimate.png',color:'#F4F2EC'}
+];
+const TALISMAN_IMGS={};
+TALISMANS.forEach(t=>{const img=new Image();img.src=t.img;TALISMAN_IMGS[t.id]=img});
+
 let volume=0.4, muted=false;
 const S={level:1,xp:0,avatarId:0,mapId:0,totalKills:0,bestWave:0,totalRuns:0};
 (function(){
@@ -137,7 +158,7 @@ const gx=gc.getContext('2d');
 let running=false, gameThread=null, paused=false;
 let keys={}, mouseX=0, mouseY=0;
 let player, enemies, wave, kills, spawnedThisWave, waveTimer, lastSpawn;
-let popups=[];
+let popups=[], loots=[], inventory=[], notifications=[];
 let gameMusic=null;
 
 function resizeGame(){gc.width=innerWidth;gc.height=innerHeight}
@@ -213,12 +234,14 @@ function startGame(){
   const av=AVATARS[S.avatarId];
   player={x:gc.width/2,y:gc.height/2,hp:st.maxHp,maxHp:st.maxHp,
     r:40,angle:0,stats:st,armor:av.armor,trim:av.trim,
-    lastAtk:0,invUntil:0};
+    lastAtk:0,invUntil:0,inventory:[],lootRadius:60};
   enemies=[];wave=0;kills=0;spawnedThisWave=0;waveTimer=0;lastSpawn=0;
+  loots=[];inventory=[];notifications=[];
   mouseX=player.x+100;mouseY=player.y;
   document.getElementById('playerAvatar').src=av.img;
   document.getElementById('playerName').textContent=av.name;
   document.getElementById('playerTitle').textContent=av.title;
+  updateInventoryHUD();
   nextWave();
   playGameMusic();
   if(!running){running=true;gameLoop()}
@@ -340,6 +363,10 @@ function update(dt,now){
       nearest.knockX=nearest.x-dx/d*nearest.r*1.5;nearest.knockY=nearest.y-dy/d*nearest.r*1.5;
       kills++;
       if(st.vamp>0)player.hp=Math.min(player.maxHp,player.hp+player.maxHp*st.vamp);
+      if(Math.random()<0.35){
+        const talisman=TALISMANS[Math.floor(Math.random()*TALISMANS.length)];
+        loots.push({x:nearest.x,y:nearest.y,talismanId:talisman.id,bobT:0,life:8,r:20});
+      }
     }else{
       const dx=nearest.x-player.x,dy=nearest.y-player.y;
       const d=Math.sqrt(dx*dx+dy*dy)||1;
@@ -353,8 +380,24 @@ function update(dt,now){
     }
   }
   popups=popups.filter(p=>now-p.t0<600);
-  if(enemies.filter(e=>e.state!=='dying').length===0&&waveTimer>2000)nextWave();
-  if(player.hp<=0){endGame();return}
+  for(const l of loots){
+     l.life-=dt;
+     if(l.life<=0){l.remove=true;continue}
+     const dx=player.x-l.x,dy=player.y-l.y;
+     const dist=Math.sqrt(dx*dx+dy*dy);
+     if(dist<player.r+l.r+10){
+       const t=TALISMANS.find(x=>x.id===l.talismanId);
+       if(t){
+         inventory.push(t.id);
+         addNotification(t);
+         updateInventoryHUD();
+       }
+       l.remove=true;
+     }
+   }
+   loots=loots.filter(l=>!l.remove);
+   if(enemies.filter(e=>e.state!=='dying').length===0&&waveTimer>2000)nextWave();
+   if(player.hp<=0){endGame();return}
   const alive=enemies.filter(e=>e.state!=='dying').length;
   document.getElementById('hudEnemies').textContent=alive+' remaining';
 }
@@ -427,8 +470,24 @@ function render(now){
   gx.beginPath();gx.moveTo(ccx,ccy+cR*pulse-4);gx.lineTo(ccx,ccy+cR*pulse+4);gx.stroke();
   gx.beginPath();gx.moveTo(ccx-cR*pulse-4,ccy);gx.lineTo(ccx-cR*pulse+4,ccy);gx.stroke();
   gx.beginPath();gx.moveTo(ccx+cR*pulse-4,ccy);gx.lineTo(ccx+cR*pulse+4,ccy);gx.stroke();
-  gx.globalAlpha=1;
-  for(const p of popups){
+   gx.globalAlpha=1;
+   for(const l of loots){
+     l.bobT+=0.04;
+     const bob=Math.sin(l.bobT)*4;
+     const t=TALISMANS.find(x=>x.id===l.talismanId);
+     const img=t?TALISMAN_IMGS[t.id]:null;
+     const lr=18;
+     if(img?.complete&&img.naturalWidth){
+       gx.drawImage(img,l.x-lr,l.y-lr+bob,lr*2,lr*2);
+     } else {
+       gx.fillStyle='#C9A34E';gx.beginPath();gx.arc(l.x,l.y+bob,lr,0,Math.PI*2);gx.fill();
+       gx.fillStyle='#0A0A0C';gx.font='bold 12px serif';gx.textAlign='center';gx.textBaseline='middle';
+       gx.fillText('?',l.x,l.y+bob);
+     }
+     gx.strokeStyle='rgba(201,163,78,.4)';gx.lineWidth=1;
+     gx.beginPath();gx.arc(l.x,l.y+bob,lr+4+Math.sin(l.bobT*1.5)*2,0,Math.PI*2);gx.stroke();
+   }
+   for(const p of popups){
     const t=(now-p.t0)/600;
     gx.globalAlpha=1-t;gx.font='bold 14px serif';gx.fillStyle=p.crit?'#C9A34E':'#F4F2EC';
     gx.textAlign='center';gx.fillText(p.text,p.x,p.y-t*40);
@@ -445,6 +504,30 @@ function updatePlayerStats(){
   document.getElementById('hpText').textContent=Math.ceil(player.hp);
   document.getElementById('hpMaxText').textContent=player.maxHp;
   document.getElementById('hpFillLarge').style.width=(player.hp/player.maxHp*100)+'%';
+}
+function updateInventoryHUD(){
+  const container=document.getElementById('inventoryList');
+  if(!container)return;
+  container.innerHTML='';
+  const show=inventory.slice(-6);
+  show.forEach(tid=>{
+    const t=TALISMANS.find(x=>x.id===tid);if(!t)return;
+    const slot=document.createElement('div');
+    slot.className='inv-slot';slot.title=t.name+' - '+t.desc;
+    slot.innerHTML='<img src="'+t.img+'" alt="'+t.name+'"><span>'+t.emoji+'</span>';
+    container.appendChild(slot);
+  });
+}
+function addNotification(talisman){
+  notifications.push({talisman,alpha:1,t0:performance.now()});
+  const container=document.getElementById('notificationArea');
+  if(!container)return;
+  const el=document.createElement('div');
+  el.className='loot-notification';
+  el.innerHTML='<img src="'+talisman.img+'" alt="'+talisman.name+'"><div class="loot-text"><strong>'+talisman.emoji+' '+talisman.name+'</strong><span>'+talisman.desc+'</span></div>';
+  container.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),10);
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400)},4000);
 }
 function updateWaveTracker(){
   const tracker=document.getElementById('waveTracker');

@@ -144,6 +144,10 @@ function openModal(id){
 }
 function closeModal(id){document.getElementById(id).classList.remove('active')}
 
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+});
+
 // ═══════════════════════════════════════
 //  MENU AUDIO
 // ═══════════════════════════════════════
