@@ -263,7 +263,6 @@ if(startOverlay){
       S.avatarId=a.id;writeState();
       g.querySelectorAll('.avatar-card').forEach(x=>{x.classList.remove('selected');x.querySelector('.status').textContent='Select'});
       c.classList.add('selected');c.querySelector('.status').textContent='Equipped';
-      updateMenuLevel();
       closeModal('avatarModal');
     };
     g.appendChild(c);
