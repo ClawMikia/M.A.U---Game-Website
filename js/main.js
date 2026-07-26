@@ -46,20 +46,32 @@ const MAPS=[
   {id:11,name:"Whispering Pines",desc:"Ancient trees hum with unseen spirits",color:"#2A3A1A",img:"assets/maps/map_12.png"},
   {id:12,name:"Crimson Throne",desc:"The seat of a fallen warlord",color:"#6A1A1A",img:"assets/maps/map_13.png"},
   {id:13,name:"Obsidian Gate",desc:"Black stone walls that swallow light",color:"#1A1A1A",img:"assets/maps/map_14.png"},
-  {id:14,name:"Scarred Wastes",desc:"Craters scar the ashen landscape",color:"#4A1A1A",img:"assets/maps/map_15.png"},
-  {id:15,name:"Thunder Plains",desc:"Lightning dances across endless skies",color:"#3A3A5A",img:"assets/maps/map_16.png"},
-  {id:16,name:"Moonlit Valley",desc:"Pale light reveals hidden paths",color:"#2A2A4A",img:"assets/maps/map_17.png"},
-  {id:17,name:"Iron Bastion",desc:"Fortified walls of unbreakable steel",color:"#4A4A4A",img:"assets/maps/map_18.png"},
-  {id:18,name:"Ashen Garden",desc:"Flowers bloom in a world of fire",color:"#3A2A1A",img:"assets/maps/map_19.png"},
-  {id:19,name:"Oracle's Peak",desc:"Visions dance in the mountain mist",color:"#1A3A5A",img:"assets/maps/map_20.png"},
-  {id:20,name:"Eclipse Plains",desc:"Darkness devours the horizon",color:"#0A0A15",img:"assets/maps/map_21.png"}
+  {id:14,name:"Moonlit Valley",desc:"Pale light reveals hidden paths",color:"#2A2A4A",img:"assets/maps/map_17.png"},
+  {id:15,name:"Iron Bastion",desc:"Fortified walls of unbreakable steel",color:"#4A4A4A",img:"assets/maps/map_18.png"},
+  {id:16,name:"Ashen Garden",desc:"Flowers bloom in a world of fire",color:"#3A2A1A",img:"assets/maps/map_19.png"},
+  {id:17,name:"Oracle's Peak",desc:"Visions dance in the mountain mist",color:"#1A3A5A",img:"assets/maps/map_20.png"},
+  {id:18,name:"Eclipse Plains",desc:"Darkness devours the horizon",color:"#0A0A15",img:"assets/maps/map_21.png"},
+  {id:19,name:"Verdant Abyss",desc:"Lush greenery hides ancient terrors",color:"#1A3A2A",img:"assets/maps/map_22.png"},
+  {id:20,name:"Crystal Depths",desc:"Prismatic light fractures in the dark",color:"#2A1A3A",img:"assets/maps/map_23.png"},
+  {id:21,name:"Saharan Dunes",desc:"Endless sands bury forgotten empires",color:"#4A3A1A",img:"assets/maps/map_24.png"},
+  {id:22,name:"Volcanic Crown",desc:"Molten rock flows from the peak",color:"#3A1A0A",img:"assets/maps/map_25.png"},
+  {id:23,name:"Frostveil Lake",desc:"Ice as far as the eye can see",color:"#1A2A3A",img:"assets/maps/map_26.png"},
+  {id:24,name:"Twilight Spire",desc:"A tower that touches the dying sky",color:"#1A1A2A",img:"assets/maps/map_27.png"}
 ];
 const AVATARS=[
   {id:0,name:"White Blade",title:"Shiro Ronin",armor:"#F4F2EC",trim:"#1E2E6B",img:"assets/player/avatar_1.png"},
   {id:1,name:"Shadow Ronin",title:"Kage Wanderer",armor:"#16161B",trim:"#5468C4",img:"assets/player/avatar_2.png"},
   {id:2,name:"Indigo Sentinel",title:"Ai Guardian",armor:"#1E2E6B",trim:"#F4F2EC",img:"assets/player/avatar_3.png"},
   {id:3,name:"Gilded Blossom",title:"Kinka Warrior",armor:"#F4F2EC",trim:"#C9A34E",img:"assets/player/avatar_4.png"},
-  {id:4,name:"Ember Wolf",title:"Honoo Kensei",armor:"#16161B",trim:"#A62639",img:"assets/player/avatar_5.png"}
+  {id:4,name:"Ember Wolf",title:"Honoo Kensei",armor:"#16161B",trim:"#A62639",img:"assets/player/avatar_5.png"},
+  {id:5,name:"Verdant Fox",title:"Midori Kitsune",armor:"#1A3A2A",trim:"#4ADE80",img:"assets/player/avatar_6.png"},
+  {id:6,name:"Crystal Hare",title:"Hikari Yuki",armor:"#E8E8F0",trim:"#A78BFA",img:"assets/player/avatar_7.png"},
+  {id:7,name:"Sandstalker",title:"Suna Nomad",armor:"#3A2A1A",trim:"#FBBF24",img:"assets/player/avatar_8.png"},
+  {id:8,name:"Magma Horn",title:"Yama Shishi",armor:"#2A1A0A",trim:"#F97316",img:"assets/player/avatar_9.png"},
+  {id:9,name:"Frost Stag",title:"Koori Ookami",armor:"#1A2A3A",trim:"#67E8F9",img:"assets/player/avatar_10.png"},
+  {id:10,name:"Dusk Crane",title:"Tasogare Tsuru",armor:"#1A1A2A",trim:"#C084FC",img:"assets/player/avatar_11.png"},
+  {id:11,name:"Storm Koi",title:"Arashi Koi",armor:"#0A1A2A",trim:"#38BDF8",img:"assets/player/avatar_12.png"},
+  {id:12,name:"Shadow Lotus",title:"Ankokuron",armor:"#1A0A1A",trim:"#E879F9",img:"assets/player/avatar_13.png"}
 ];
 const AVATAR_IMGS=[];
 AVATARS.forEach((a,i)=>{const img=new Image();img.src=a.img;AVATAR_IMGS.push(img)});
@@ -74,11 +86,11 @@ function xpNeeded(lvl){return 50+lvl*30}
 // ═══════════════════════════════════════
 //  ASSETS
 // ═══════════════════════════════════════
-const ENEMY_IMGS={1:[],2:[],3:[]};
+const ENEMY_IMGS={1:[],2:[],3:[],4:[]};
 const MAP_IMGS=[];
 function preloadEnemyImages(){
-  [1,2,3].forEach(tier=>{
-    const count=tier===3?5:tier===2?7:6;
+  [1,2,3,4].forEach(tier=>{
+    const count=tier===4?7:tier===3?10:tier===2?14:12;
     for(let i=1;i<=count;i++){
       const img=new Image();
       img.src=`assets/enemies/enemy_tier${tier}_${i}.png`;
@@ -252,6 +264,7 @@ if(startOverlay){
       g.querySelectorAll('.avatar-card').forEach(x=>{x.classList.remove('selected');x.querySelector('.status').textContent='Select'});
       c.classList.add('selected');c.querySelector('.status').textContent='Equipped';
       updateMenuLevel();
+      closeModal('avatarModal');
     };
     g.appendChild(c);
   });

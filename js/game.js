@@ -16,20 +16,32 @@ const MAPS=[
   {id:11,name:"Whispering Pines",desc:"Ancient trees hum with unseen spirits",color:"#2A3A1A",img:"assets/maps/map_12.png"},
   {id:12,name:"Crimson Throne",desc:"The seat of a fallen warlord",color:"#6A1A1A",img:"assets/maps/map_13.png"},
   {id:13,name:"Obsidian Gate",desc:"Black stone walls that swallow light",color:"#1A1A1A",img:"assets/maps/map_14.png"},
-  {id:14,name:"Scarred Wastes",desc:"Craters scar the ashen landscape",color:"#4A1A1A",img:"assets/maps/map_15.png"},
-  {id:15,name:"Thunder Plains",desc:"Lightning dances across endless skies",color:"#3A3A5A",img:"assets/maps/map_16.png"},
-  {id:16,name:"Moonlit Valley",desc:"Pale light reveals hidden paths",color:"#2A2A4A",img:"assets/maps/map_17.png"},
-  {id:17,name:"Iron Bastion",desc:"Fortified walls of unbreakable steel",color:"#4A4A4A",img:"assets/maps/map_18.png"},
-  {id:18,name:"Ashen Garden",desc:"Flowers bloom in a world of fire",color:"#3A2A1A",img:"assets/maps/map_19.png"},
-  {id:19,name:"Oracle's Peak",desc:"Visions dance in the mountain mist",color:"#1A3A5A",img:"assets/maps/map_20.png"},
-  {id:20,name:"Eclipse Plains",desc:"Darkness devours the horizon",color:"#0A0A15",img:"assets/maps/map_21.png"}
+  {id:14,name:"Moonlit Valley",desc:"Pale light reveals hidden paths",color:"#2A2A4A",img:"assets/maps/map_17.png"},
+  {id:15,name:"Iron Bastion",desc:"Fortified walls of unbreakable steel",color:"#4A4A4A",img:"assets/maps/map_18.png"},
+  {id:16,name:"Ashen Garden",desc:"Flowers bloom in a world of fire",color:"#3A2A1A",img:"assets/maps/map_19.png"},
+  {id:17,name:"Oracle's Peak",desc:"Visions dance in the mountain mist",color:"#1A3A5A",img:"assets/maps/map_20.png"},
+  {id:18,name:"Eclipse Plains",desc:"Darkness devours the horizon",color:"#0A0A15",img:"assets/maps/map_21.png"},
+  {id:19,name:"Verdant Abyss",desc:"Lush greenery hides ancient terrors",color:"#1A3A2A",img:"assets/maps/map_22.png"},
+  {id:20,name:"Crystal Depths",desc:"Prismatic light fractures in the dark",color:"#2A1A3A",img:"assets/maps/map_23.png"},
+  {id:21,name:"Saharan Dunes",desc:"Endless sands bury forgotten empires",color:"#4A3A1A",img:"assets/maps/map_24.png"},
+  {id:22,name:"Volcanic Crown",desc:"Molten rock flows from the peak",color:"#3A1A0A",img:"assets/maps/map_25.png"},
+  {id:23,name:"Frostveil Lake",desc:"Ice as far as the eye can see",color:"#1A2A3A",img:"assets/maps/map_26.png"},
+  {id:24,name:"Twilight Spire",desc:"A tower that touches the dying sky",color:"#1A1A2A",img:"assets/maps/map_27.png"}
 ];
 const AVATARS=[
   {id:0,name:"White Blade",title:"Shiro Ronin",armor:"#F4F2EC",trim:"#1E2E6B",img:"assets/player/avatar_1.png"},
   {id:1,name:"Shadow Ronin",title:"Kage Wanderer",armor:"#16161B",trim:"#5468C4",img:"assets/player/avatar_2.png"},
   {id:2,name:"Indigo Sentinel",title:"Ai Guardian",armor:"#1E2E6B",trim:"#F4F2EC",img:"assets/player/avatar_3.png"},
   {id:3,name:"Gilded Blossom",title:"Kinka Warrior",armor:"#F4F2EC",trim:"#C9A34E",img:"assets/player/avatar_4.png"},
-  {id:4,name:"Ember Wolf",title:"Honoo Kensei",armor:"#16161B",trim:"#A62639",img:"assets/player/avatar_5.png"}
+  {id:4,name:"Ember Wolf",title:"Honoo Kensei",armor:"#16161B",trim:"#A62639",img:"assets/player/avatar_5.png"},
+  {id:5,name:"Verdant Fox",title:"Midori Kitsune",armor:"#1A3A2A",trim:"#4ADE80",img:"assets/player/avatar_6.png"},
+  {id:6,name:"Crystal Hare",title:"Hikari Yuki",armor:"#E8E8F0",trim:"#A78BFA",img:"assets/player/avatar_7.png"},
+  {id:7,name:"Sandstalker",title:"Suna Nomad",armor:"#3A2A1A",trim:"#FBBF24",img:"assets/player/avatar_8.png"},
+  {id:8,name:"Magma Horn",title:"Yama Shishi",armor:"#2A1A0A",trim:"#F97316",img:"assets/player/avatar_9.png"},
+  {id:9,name:"Frost Stag",title:"Koori Ookami",armor:"#1A2A3A",trim:"#67E8F9",img:"assets/player/avatar_10.png"},
+  {id:10,name:"Dusk Crane",title:"Tasogare Tsuru",armor:"#1A1A2A",trim:"#C084FC",img:"assets/player/avatar_11.png"},
+  {id:11,name:"Storm Koi",title:"Arashi Koi",armor:"#0A1A2A",trim:"#38BDF8",img:"assets/player/avatar_12.png"},
+  {id:12,name:"Shadow Lotus",title:"Ankokuron",armor:"#1A0A1A",trim:"#E879F9",img:"assets/player/avatar_13.png"}
 ];
 const AVATAR_IMGS=[];
 AVATARS.forEach((a,i)=>{const img=new Image();img.src=a.img;AVATAR_IMGS.push(img)});
@@ -80,11 +92,11 @@ function saveAudioState(){
 // ═══════════════════════════════════════
 //  ASSETS
 // ═══════════════════════════════════════
-const ENEMY_IMGS={1:[],2:[],3:[]};
+const ENEMY_IMGS={1:[],2:[],3:[],4:[]};
 const MAP_IMGS=[];
 function preloadEnemyImages(){
-  [1,2,3].forEach(tier=>{
-    const count=tier===3?5:tier===2?7:6;
+  [1,2,3,4].forEach(tier=>{
+    const count=tier===4?7:tier===3?10:tier===2?14:12;
     for(let i=1;i<=count;i++){
       const img=new Image();
       img.src=`assets/enemies/enemy_tier${tier}_${i}.png`;
@@ -200,7 +212,7 @@ function startGame(){
   const st=getStats();
   const av=AVATARS[S.avatarId];
   player={x:gc.width/2,y:gc.height/2,hp:st.maxHp,maxHp:st.maxHp,
-    r:20,angle:0,stats:st,armor:av.armor,trim:av.trim,
+    r:40,angle:0,stats:st,armor:av.armor,trim:av.trim,
     lastAtk:0,invUntil:0};
   enemies=[];wave=0;kills=0;spawnedThisWave=0;waveTimer=0;lastSpawn=0;
   mouseX=player.x+100;mouseY=player.y;
@@ -233,7 +245,7 @@ function nextWave(){
 }
 
 function spawnEnemy(){
-  const tier=wave<=3?1:wave<=8?(Math.random()<.4?2:1):(Math.random()<.3?3:Math.random()<.5?2:1);
+  const tier=wave<=3?1:wave<=8?(Math.random()<.4?2:1):(Math.random()<.3?4:Math.random()<.4?3:Math.random()<.6?2:1);
   const edge=Math.floor(Math.random()*4);
   const m=30;
   let x,y;
@@ -243,7 +255,7 @@ function spawnEnemy(){
   else{x=-m;y=Math.random()*gc.height}
   const baseHp=18+(tier-1)*26;const baseSpd=42+(tier-1)*10;
   const baseDmg=4+(tier-1)*4;
-  const colors={1:'#5468C4',2:'#C9A34E',3:'#E0455A'};
+  const colors={1:'#5468C4',2:'#C9A34E',3:'#E0455A',4:'#8B5CF6'};
   const skinIdx=Math.floor(Math.random()*(ENEMY_IMGS[tier]?.length||3));
   const waveSpeedMult=0.5+wave*0.05;
   enemies.push({x,y,hp:baseHp*(1+(wave-1)*.12),maxHp:baseHp*(1+(wave-1)*.12),
@@ -280,7 +292,7 @@ function update(dt,now){
   player.y=Math.max(player.r,Math.min(gc.height-player.r,player.y));
   player.angle=Math.atan2(mouseY-player.y,mouseX-player.x);
   if(st.regen>0)player.hp=Math.min(player.maxHp,player.hp+st.regen*dt);
-  const crossDist=45;
+  const crossDist=85;
   const cx=player.x+Math.cos(player.angle)*crossDist;
   const cy=player.y+Math.sin(player.angle)*crossDist;
   const count=Math.min(40,3+wave*2);
@@ -311,7 +323,7 @@ function update(dt,now){
       if(Math.random()>=st.shield){player.hp-=e.dmg;player.invUntil=now+500;playRandomSound(PLAYER_DAMAGE_FILES)}
     }
     const dc=Math.sqrt((e.x-cx)**2+(e.y-cy)**2);
-    if(dc<e.r+26&&dc<nearestDist){nearestDist=dc;nearest=e}
+    if(dc<e.r+50&&dc<nearestDist){nearestDist=dc;nearest=e}
   }
   enemies=enemies.filter(e=>!e.remove);
   if(nearest&&now-player.lastAtk>=st.cooldown){
@@ -402,10 +414,10 @@ function render(now){
   const tGrd=gx.createRadialGradient(bx,by,0,bx,by,8);
   tGrd.addColorStop(0,'#F4F2ECAA');tGrd.addColorStop(1,'#F4F2EC00');
   gx.fillStyle=tGrd;gx.beginPath();gx.arc(bx,by,8,0,Math.PI*2);gx.fill();
-  const crossDist=45;
+  const crossDist=85;
   const ccx=player.x+Math.cos(player.angle)*crossDist;
   const ccy=player.y+Math.sin(player.angle)*crossDist;
-  const locked=enemies.some(e=>e.state==='chase'&&Math.sqrt((e.x-ccx)**2+(e.y-ccy)**2)<e.r+26);
+  const locked=enemies.some(e=>e.state==='chase'&&Math.sqrt((e.x-ccx)**2+(e.y-ccy)**2)<e.r+50);
   const cColor=locked?'#C9A34E':'#7C8CE8';
   const cR=locked?18:10;
   const pulse=locked?1+.12*Math.sin(now/130):1;
